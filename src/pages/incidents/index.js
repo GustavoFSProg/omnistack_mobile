@@ -1,16 +1,28 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { View, Image, Text, FlatList, TouchableOpacity } from 'react-native'
 import logoImg from '../../assets/logo.png'
 import { useNavigation } from '@react-navigation/native'
 import styles from './styles'
 import { Feather } from '@expo/vector-icons'
+import api from '../../services/api'
 
 export default function Incidents() {
   const navigation = useNavigation()
+  const [incidents, setIncidents] = useState([])
 
   function navigateToDetails() {
     navigation.navigate('Detail')
   }
+
+  async function loadIncidents() {
+    const { data } = await api.get('/incidents')
+    setIncidents(data)
+    console.log(data)
+  }
+
+  useEffect(() => {
+    loadIncidents()
+  }, [])
 
   return (
     <View style={styles.container}>
@@ -25,23 +37,22 @@ export default function Incidents() {
       <Text style={styles.description}>
         Escolha um dos casos abaixo e salve o dia
       </Text>
-
       <FlatList
-        data={[1, 2, 3, 4, 5, 6]}
+        data={incidents}
         showsVerticalScrollIndicator={false}
-        keyExtractor={(incidents) => String(incidents)}
+        keyExtractor={(incidents) => String(incidents.id)}
         style={styles.incidentsList}
-        renderItem={() => (
+        renderItem={({ item: incidents }) => (
           <View style={styles.incidentsList}>
             <View style={styles.incident}>
               <Text style={styles.incidentProperty}>ONG</Text>
-              <Text style={styles.incidentValue}> 100 - Viralatas</Text>
+              <Text style={styles.incidentValue}>{incidents.ong_name}</Text>
 
               <Text style={styles.incidentProperty}>Caso:</Text>
-              <Text style={styles.incidentValue}> Cachorro atropelado</Text>
+              <Text style={styles.incidentValue}> {incidents.title}</Text>
 
-              <Text style={styles.incidentProperty}>Valor</Text>
-              <Text style={styles.incidentValue}> R$ 325</Text>
+              <Text style={styles.incidentProperty}>Valor:</Text>
+              <Text style={styles.incidentValue}> {incidents.value}</Text>
 
               <TouchableOpacity
                 style={styles.Button}
