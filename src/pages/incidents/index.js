@@ -17,7 +17,6 @@ export default function Incidents() {
   async function loadIncidents() {
     const { data } = await api.get('/incidents')
     setIncidents(data)
-    console.log(data)
   }
 
   useEffect(() => {
@@ -42,17 +41,22 @@ export default function Incidents() {
         showsVerticalScrollIndicator={false}
         keyExtractor={(incidents) => String(incidents.id)}
         style={styles.incidentsList}
-        renderItem={({ item: incidents }) => (
+        renderItem={({ item: incident }) => (
           <View style={styles.incidentsList}>
             <View style={styles.incident}>
               <Text style={styles.incidentProperty}>ONG</Text>
-              <Text style={styles.incidentValue}>{incidents.ong_name}</Text>
+              <Text style={styles.incidentValue}>{incident.ong_name}</Text>
 
               <Text style={styles.incidentProperty}>Caso:</Text>
-              <Text style={styles.incidentValue}> {incidents.title}</Text>
+              <Text style={styles.incidentValue}> {incident.title}</Text>
 
               <Text style={styles.incidentProperty}>Valor:</Text>
-              <Text style={styles.incidentValue}> {incidents.value}</Text>
+              <Text style={styles.incidentValue}>
+                {Intl.NumberFormat('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                }).format(incident.value)}
+              </Text>
 
               <TouchableOpacity
                 style={styles.Button}
