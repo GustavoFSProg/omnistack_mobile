@@ -9,54 +9,84 @@ import api from '../../services/api'
 export default function Incidents() {
   const navigation = useNavigation()
   const [incidents, setIncidents] = useState([])
+  const [total, setTotal] = useState(2)
+  const [page, setPage] = useState(1)
+  const [loading, setLoading] = useState(false)
 
-  function navigateToDetails() {
-    navigation.navigate('Detail')
+  function navigateToDetails(incident) {
+    navigation.navigate('Detail', { incident })
   }
 
   async function loadIncidents() {
+    if (loading) {
+      return
+    }
+    if (counter < 0 && incidents.length === counter) {
+      return
+    }
+
+    setLoading(true)
+
     const { data } = await api.get('/incidents')
-    setIncidents(data)
-    console.log(data)
+
+    setIncidents([...incidents, ...data])
+    setTotal(counter)
+    setPage(page + 1)
+    setLoading(false)
   }
 
   useEffect(() => {
     loadIncidents()
   }, [])
 
+  let counter = 0
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Image source={logoImg} />
         <Text style={styles.headerText}>
-          Total de Casos<Text style={styles.headerTextBold}>0 casos</Text>
+          Total de Casos{incidents.forEach((incident) => (counter += 1))}
+          <Text style={styles.headerTextBold}>
+            {' '}
+            <Text>
+              {counter}
+
+              <Text>casos</Text>
+            </Text>
+          </Text>
         </Text>
       </View>
-
       <Text style={styles.title}>Bem Vindo!</Text>
       <Text style={styles.description}>
         Escolha um dos casos abaixo e salve o dia
       </Text>
       <FlatList
         data={incidents}
-        showsVerticalScrollIndicator={false}
+        // showsVerticalScrollIndicator={false}
         keyExtractor={(incidents) => String(incidents.id)}
         style={styles.incidentsList}
-        renderItem={({ item: incidents }) => (
+        onEndReachedThreshold={0.2}
+        onEndReached={loadIncidents}
+        renderItem={({ item: incident }) => (
           <View style={styles.incidentsList}>
             <View style={styles.incident}>
               <Text style={styles.incidentProperty}>ONG</Text>
-              <Text style={styles.incidentValue}>{incidents.ong_name}</Text>
+              <Text style={styles.incidentValue}>{incident.ong_name}</Text>
 
               <Text style={styles.incidentProperty}>Caso:</Text>
-              <Text style={styles.incidentValue}> {incidents.title}</Text>
+              <Text style={styles.incidentValue}> {incident.title}</Text>
 
               <Text style={styles.incidentProperty}>Valor:</Text>
-              <Text style={styles.incidentValue}> {incidents.value}</Text>
+              <Text style={styles.incidentValue}>
+                {Intl.NumberFormat('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                }).format(incident.value)}
+              </Text>
 
               <TouchableOpacity
                 style={styles.Button}
-                onPress={navigateToDetails}
+                onPress={() => navigateToDetails(incident)}
               >
                 <Text style={styles.detailsButtonText}>
                   {' '}
